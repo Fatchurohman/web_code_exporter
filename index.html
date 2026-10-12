@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Full Web Project Exporter</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #0b1120;
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem;
+      gap: 1rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      background-color: #1e293b;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+
+    .brand h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .brand p {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.825rem;
+      font-weight: 600;
+      transition: background 0.2s, transform 0.05s;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .btn-html {
+      background-color: #e34c26;
+      color: #ffffff;
+    }
+    .btn-html:hover { background-color: #c53c1b; }
+
+    .btn-css {
+      background-color: #264de4;
+      color: #ffffff;
+    }
+    .btn-css:hover { background-color: #1f3eb7; }
+
+    .btn-js {
+      background-color: #eab308;
+      color: #111827;
+    }
+    .btn-js:hover { background-color: #ca8a04; }
+
+    .btn-download-all {
+      background-color: #10b981;
+      color: #ffffff;
+    }
+    .btn-download-all:hover { background-color: #059669; }
+
+    .btn-action {
+      background-color: #334155;
+      color: #f1f5f9;
+    }
+    .btn-action:hover { background-color: #475569; }
+
+    .btn-danger {
+      background-color: #ef4444;
+      color: #ffffff;
+    }
+    .btn-danger:hover { background-color: #dc2626; }
+
+    .btn-preview {
+      background-color: #8b5cf6;
+      color: #ffffff;
+    }
+    .btn-preview:hover { background-color: #7c3aed; }
+
+    .editor-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      flex: 1;
+    }
+
+    @media (max-width: 992px) {
+      .editor-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background-color: #0f172a;
+      padding: 0.65rem 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    .badge {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .badge-html { background-color: #e34c26; }
+    .badge-css { background-color: #264de4; }
+    .badge-js { background-color: #eab308; }
+
+    textarea {
+      flex: 1;
+      min-height: 460px;
+      background-color: #030712;
+      color: #e2e8f0;
+      border: none;
+      outline: none;
+      padding: 1rem;
+      font-family: "Fira Code", monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      resize: vertical;
+    }
+
+    /* Modal Live Preview */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.75);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background-color: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 1050px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #0f172a;
+      border-bottom: 1px solid #334155;
+    }
+
+    .modal-header span {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background-color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>Code Project Exporter (HTML + CSS + JS)</h1>
+      <p>Otomatis ekstrak style/script, hubungkan tag, preview, dan unduh per file atau sekaligus.</p>
+    </div>
+    <div class="btn-group">
+      <button class="btn-preview" id="btnLivePreview">Pratinjau Hasil</button>
+      <button class="btn-action" id="btnAutoLink">Sambungkan CSS & JS ke HTML</button>
+      <button class="btn-download-all" id="btnDownloadAll">Download Semua (3 File)</button>
+      <button class="btn-danger" id="btnClearAll">Reset</button>
+    </div>
+  </header>
+
+  <main class="editor-container">
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="badge badge-html"></span>
+          <span>index.html</span>
+        </div>
+        <button class="btn-html" id="btnDownloadHtml">Download HTML</button>
+      </div>
+      <textarea id="htmlInput" placeholder="<!-- Paste kode HTML di sini -->"></textarea>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="badge badge-css"></span>
+          <span>style.css</span>
+        </div>
+        <button class="btn-css" id="btnDownloadCss">Download CSS</button>
+      </div>
+      <textarea id="cssInput" placeholder="/* Paste kode CSS di sini */"></textarea>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="badge badge-js"></span>
+          <span>script.js</span>
+        </div>
+        <button class="btn-js" id="btnDownloadJs">Download JS</button>
+      </div>
+      <textarea id="jsInput" placeholder="// Paste kode JS di sini"></textarea>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="previewModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span>Live Browser Preview</span>
+        <button class="btn-danger" id="btnClosePreview">Tutup</button>
+      </div>
+      <iframe id="previewFrame" sandbox="allow-scripts allow-modals"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const htmlInput = document.getElementById('htmlInput');
+    const cssInput = document.getElementById('cssInput');
+    const jsInput = document.getElementById('jsInput');
+
+    const btnDownloadHtml = document.getElementById('btnDownloadHtml');
+    const btnDownloadCss = document.getElementById('btnDownloadCss');
+    const btnDownloadJs = document.getElementById('btnDownloadJs');
+    const btnDownloadAll = document.getElementById('btnDownloadAll');
+
+    const btnAutoLink = document.getElementById('btnAutoLink');
+    const btnClearAll = document.getElementById('btnClearAll');
+    const btnLivePreview = document.getElementById('btnLivePreview');
+    const btnClosePreview = document.getElementById('btnClosePreview');
+
+    const previewModal = document.getElementById('previewModal');
+    const previewFrame = document.getElementById('previewFrame');
+
+    const triggerDownload = (filename, content, mimeType) => {
+      try {
+        if (!content || content.trim() === '') {
+          alert(`File ${filename} tidak dapat diunduh karena masih kosong.`);
+          return false;
+        }
+
+        const blob = new Blob([content], { type: mimeType });
+        const objectUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+
+        anchor.href = objectUrl;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(objectUrl);
+        return true;
+      } catch (err) {
+        console.error(`Gagal mengunduh ${filename}:`, err);
+        return false;
+      }
+    };
+
+    btnDownloadHtml.addEventListener('click', () => {
+      triggerDownload('index.html', htmlInput.value, 'text/html;charset=utf-8');
+    });
+
+    btnDownloadCss.addEventListener('click', () => {
+      triggerDownload('style.css', cssInput.value, 'text/css;charset=utf-8');
+    });
+
+    btnDownloadJs.addEventListener('click', () => {
+      triggerDownload('script.js', jsInput.value, 'text/javascript;charset=utf-8');
+    });
+
+    btnDownloadAll.addEventListener('click', () => {
+      const files = [
+        { name: 'index.html', content: htmlInput.value, type: 'text/html;charset=utf-8' },
+        { name: 'style.css', content: cssInput.value, type: 'text/css;charset=utf-8' },
+        { name: 'script.js', content: jsInput.value, type: 'text/javascript;charset=utf-8' }
+      ];
+
+      const validFiles = files.filter(item => item.content.trim() !== '');
+
+      if (validFiles.length === 0) {
+        alert('Semua kolom masih kosong!');
+        return;
+      }
+
+      validFiles.forEach((file, index) => {
+        setTimeout(() => {
+          triggerDownload(file.name, file.content, file.type);
+        }, index * 250);
+      });
+    });
+
+    btnAutoLink.addEventListener('click', () => {
+      let html = htmlInput.value.trim();
+
+      if (!html) {
+        alert('Kolom index.html masih kosong!');
+        return;
+      }
+
+      const cssTag = '<link rel="stylesheet" href="style.css">';
+      const jsTag = '<script src="script.js" defer><\/script>';
+
+      const hasCss = html.includes('href="style.css"') || html.includes("href='style.css'");
+      const hasJs = html.includes('src="script.js"') || html.includes("src='script.js'");
+
+      if (!hasCss) {
+        if (html.includes('</head>')) {
+          html = html.replace('</head>', `  ${cssTag}\n</head>`);
+        } else {
+          html = `${cssTag}\n${html}`;
+        }
+      }
+
+      if (!hasJs) {
+        if (html.includes('</body>')) {
+          html = html.replace('</body>', `  ${jsTag}\n</body>`);
+        } else {
+          html = `${html}\n\n${jsTag}`;
+        }
+      }
+
+      htmlInput.value = html;
+      alert('Tag link style.css dan script.js berhasil disinkronkan ke index.html!');
+    });
+
+    // Otomatis ekstrak <style> dan <script> jika dipaste kode HTML gabungan mentah
+    htmlInput.addEventListener('paste', () => {
+      setTimeout(() => {
+        let content = htmlInput.value;
+        let extractedCss = '';
+        let extractedJs = '';
+
+        const styleMatch = content.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+        if (styleMatch && styleMatch[1].trim() !== '') {
+          extractedCss = styleMatch[1].trim();
+          content = content.replace(styleMatch[0], '<link rel="stylesheet" href="style.css">');
+        }
+
+        const scriptMatch = content.match(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/i);
+        if (scriptMatch && scriptMatch[1].trim() !== '') {
+          extractedJs = scriptMatch[1].trim();
+          content = content.replace(scriptMatch[0], '<script src="script.js" defer><\/script>');
+        }
+
+        if (extractedCss || extractedJs) {
+          const wantExtract = confirm('Terdeteksi blok <style> atau <script> inline di dalam kode HTML. Pisahkan otomatis ke tab CSS dan JS?');
+          if (wantExtract) {
+            htmlInput.value = content;
+            if (extractedCss) cssInput.value = extractedCss;
+            if (extractedJs) jsInput.value = extractedJs;
+          }
+        }
+      }, 50);
+    });
+
+    // Live Preview
+    btnLivePreview.addEventListener('click', () => {
+      const html = htmlInput.value;
+      const css = cssInput.value;
+      const js = jsInput.value;
+
+      if (!html.trim() && !css.trim() && !js.trim()) {
+        alert('Belum ada kode untuk ditampilkan!');
+        return;
+      }
+
+      const combinedDoc = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>${css}</style>
+        </head>
+        <body>
+          ${html.replace(/<link[^>]*href=["']style\.css["'][^>]*>/gi, '').replace(/<script[^>]*src=["']script\.js["'][^>]*><\/script>/gi, '')}
+          <script>${js}<\/script>
+        </body>
+        </html>
+      `;
+
+      previewFrame.srcdoc = combinedDoc;
+      previewModal.classList.add('active');
+    });
+
+    btnClosePreview.addEventListener('click', () => {
+      previewModal.classList.remove('active');
+      previewFrame.srcdoc = '';
+    });
+
+    btnClearAll.addEventListener('click', () => {
+      if (confirm('Bersihkan seluruh editor (HTML, CSS, JS)?')) {
+        htmlInput.value = '';
+        cssInput.value = '';
+        jsInput.value = '';
+      }
+    });
+  </script>
+</body>
+</html>
